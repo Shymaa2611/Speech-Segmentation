@@ -3,27 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SincNet(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, sample_rate=16000):
-        super(SincNet, self).__init__()
-       # if sample_rate != 16000:
-        #    raise NotImplementedError("SincNet only supports 16kHz audio .")
-        self.kernel_size = kernel_size
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.sample_rate=sample_rate
-        self.coeffs = nn.Parameter(torch.Tensor(out_channels, in_channels, kernel_size))
-        self.b = nn.Parameter(torch.Tensor(out_channels))
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        self.coeffs.data.normal_(0, 1)
-        self.b.data.zero_()
-
-    def forward(self, x):
-        sinc = torch.sin(self.coeffs * self.sample_rate) / (self.coeffs * self.sample_rate)
-        h = sinc.sum(2) + self.b.unsqueeze(1)
-        return nn.functional.conv1d(x, h.unsqueeze(-1), stride=self.kernel_size // 2)
-    
+      pass
 class Classifier(nn.Module):
     def __init__(self, input_size):
         super(Classifier, self).__init__()
