@@ -3,14 +3,14 @@
      speak in audio .
 
 
-## Dataset
+# Dataset
  - AMI Meeting Corpus 
-   ○ 100 hours of meeting recordings
-   ○ English
-   ○ Recorded in three different rooms with different acoustic properties
-   ○ Mostly non-native speakers
-   ○ Split into train, test, and development sets
-   ○ Groundtruth: RTTM files (one speech turn per line with start time and duration)
+   ○ 100 hours of meeting recordings<br/>
+   ○ English <br/>
+   ○ Recorded in three different rooms with different acoustic properties<br/>
+   ○ Mostly non-native speakers<br/>
+   ○ Split into train, test, and development sets<br/>
+   ○ Groundtruth: RTTM files (one speech turn per line with start time and duration)<br/>
 
 ## PREPROCESSING
  -	Load data using pyannote.database
@@ -20,9 +20,9 @@
  ![AMI](AMI.jpg)
 
 
- ![Architecture](architecture model.jpg)
+ ![Architecture](architecture.jpg)
 
- ### Research Paper
+ ## Research Paper
   - https://arxiv.org/abs/2104.04045
 
 
@@ -34,5 +34,5 @@
 
 
 
-# Checkpoint 
+## Checkpoint 
 
