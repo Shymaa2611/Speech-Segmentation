@@ -5,7 +5,7 @@
 
 # Dataset
  - AMI Meeting Corpus 
-   ○ 100 hours of meeting recordings<br/>
+   <br/>○ 100 hours of meeting recordings<br/>
    ○ English <br/>
    ○ Recorded in three different rooms with different acoustic properties<br/>
    ○ Mostly non-native speakers<br/>
