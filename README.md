@@ -27,7 +27,7 @@
 
 ## Usage 
 ``` python
-audio_url="audio_2.py
+audio_url="audio_2.wav"
 diarization = pipeline(audio_url)
 pipeline = Pipeline.from_pretrained("V-Segmentation_checkpoint\\config.yaml")
 for turn, _,speaker in  diarization.itertracks(yield_label=True):
