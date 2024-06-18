@@ -19,7 +19,7 @@
 
  ![AMI](AMI.jpg)
 
-
+## Model Architecture 
  ![Architecture](architecture.jpg)
 
  ## Research Paper
