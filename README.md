@@ -19,13 +19,20 @@
 
  ![AMI](AMI.jpg)
 
-## Model Architecture 
+
  ![Architecture](architecture.jpg)
 
  ## Research Paper
   - https://arxiv.org/abs/2104.04045
 
-
+## Usage 
+``` python
+audio_url="audio_2.py
+diarization = pipeline(audio_url)
+pipeline = Pipeline.from_pretrained("V-Segmentation_checkpoint\\config.yaml")
+for turn, _,speaker in  diarization.itertracks(yield_label=True):
+  print({"start":turn.start,"end":turn.end})
+```
 ## OUTPUT 
     RTTM 
       SPEAKER ES2011a 1 34.27 10.12 <NA> <NA> FEE041 <NA> <NA>
