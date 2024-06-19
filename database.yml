@@ -1,0 +1,81 @@
+Databases:
+  
+  # {uri} is a placeholder for the session name (eg. ES2004c).
+  # you might need to update this line to fit your own setup.
+  AMI: Prepare-AMI/amicorpus/{uri}/audio/{uri}.Array1-01.wav
+  AMI-SDM: Prepare-AMI/amicorpus/{uri}/audio/{uri}.Array1-01.wav
+
+Protocols:
+
+  AMI-SDM:
+    SpeakerDiarization:
+      only_words:
+        train:
+            uri: Prepare-AMI/lists/train.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/train/{uri}.rttm
+            annotated: Prepare-AMI/uems/train/{uri}.uem
+        development:
+            uri: Prepare-AMI/lists/dev.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/dev/{uri}.rttm
+            annotated: Prepare-AMI/uems/dev/{uri}.uem
+        test:
+            uri: Prepare-AMI/lists/test.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/test/{uri}.rttm
+            annotated: Prepare-AMI/uems/test/{uri}.uem
+      mini:
+        train:
+          uri: Prepare-AMI/lists/train.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/train/{uri}.rttm
+          annotated: Prepare-AMI/uems/train/{uri}.uem
+        development:
+          uri: Prepare-AMI/lists/dev.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/dev/{uri}.rttm
+          annotated: Prepare-AMI/uems/dev/{uri}.uem
+        test:
+          uri: Prepare-AMI/lists/test.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/test/{uri}.rttm
+          annotated: Prepare-AMI/uems/test/{uri}.uem
+
+  AMI:
+    SpeakerDiarization:
+      only_words:
+        train:
+            uri: Prepare-AMI/lists/train.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/train/{uri}.rttm
+            annotated: Prepare-AMI/uems/train/{uri}.uem
+        development:
+            uri: Prepare-AMI/lists/dev.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/dev/{uri}.rttm
+            annotated: Prepare-AMI/uems/dev/{uri}.uem
+        test:
+            uri: Prepare-AMI/lists/test.meetings.txt
+            annotation: Prepare-AMI/only_words/rttms/test/{uri}.rttm
+            annotated: Prepare-AMI/uems/test/{uri}.uem
+
+      mini:
+        train:
+          uri: Prepare-AMI/lists/train.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/train/{uri}.rttm
+          annotated: Prepare-AMI/uems/train/{uri}.uem
+        development:
+          uri: Prepare-AMI/lists/dev.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/dev/{uri}.rttm
+          annotated: Prepare-AMI/uems/dev/{uri}.uem
+        test:
+          uri: Prepare-AMI/lists/test.mini.txt
+          annotation: Prepare-AMI/only_words/rttms/test/{uri}.rttm
+          annotated: Prepare-AMI/uems/test/{uri}.uem
+ 
+      word_and_vocalsounds:
+        train:
+            uri: Prepare-AMI/lists/train.meetings.txt
+            annotation: ../word_and_vocalsounds/rttms/train/{uri}.rttm
+            annotated: Prepare-AMI/uems/train/{uri}.uem
+        development:
+            uri: Prepare-AMI/lists/dev.meetings.txt
+            annotation: ../word_and_vocalsounds/rttms/dev/{uri}.rttm
+            annotated: Prepare-AMI/uems/dev/{uri}.uem
+        test:
+            uri: Prepare-AMI/lists/test.meetings.txt
+            annotation: ../word_and_vocalsounds/rttms/test/{uri}.rttm
+            annotated: Prepare-AMI/uems/test/{uri}.uem
