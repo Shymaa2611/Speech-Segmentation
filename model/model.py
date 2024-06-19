@@ -24,152 +24,46 @@ from torchmetrics import AUROC, MetricCollection
 from model.utils import multi_conv_num_frames, multi_conv_receptive_field_center, multi_conv_receptive_field_size
 
 class SincNet(nn.Module):
-    def __init__(self, sample_rate: int = 16000, stride: int = 1):
-        super().__init__()
+    def __init__(self, in_channels, out_channels, kernel_size, sample_rate=16000):
+        super(SincNet, self).__init__()
+       # if sample_rate != 16000:
+        #    raise NotImplementedError("SincNet only supports 16kHz audio .")
+        self.kernel_size = kernel_size
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.sample_rate=sample_rate
+        self.coeffs = nn.Parameter(torch.Tensor(out_channels, in_channels, kernel_size))
+        self.b = nn.Parameter(torch.Tensor(out_channels))
+        self.reset_parameters()
 
-        if sample_rate != 16000:
-            raise NotImplementedError("SincNet only supports 16kHz audio for now.")
-        self.sample_rate = sample_rate
-        self.stride = stride
+    def reset_parameters(self):
+        self.coeffs.data.normal_(0, 1)
+        self.b.data.zero_()
 
-        self.wav_norm1d = nn.InstanceNorm1d(1, affine=True)
-
-        self.conv1d = nn.ModuleList()
-        self.pool1d = nn.ModuleList()
-        self.norm1d = nn.ModuleList()
-
-        self.conv1d.append(
-            Encoder(
-                ParamSincFB(
-                    80,
-                    251,
-                    stride=self.stride,
-                    sample_rate=sample_rate,
-                    min_low_hz=50,
-                    min_band_hz=50,
-                )
-            )
-        )
-        self.pool1d.append(nn.MaxPool1d(3, stride=3, padding=0, dilation=1))
-        self.norm1d.append(nn.InstanceNorm1d(80, affine=True))
-
-        self.conv1d.append(nn.Conv1d(80, 60, 5, stride=1))
-        self.pool1d.append(nn.MaxPool1d(3, stride=3, padding=0, dilation=1))
-        self.norm1d.append(nn.InstanceNorm1d(60, affine=True))
-
-        self.conv1d.append(nn.Conv1d(60, 60, 5, stride=1))
-        self.pool1d.append(nn.MaxPool1d(3, stride=3, padding=0, dilation=1))
-        self.norm1d.append(nn.InstanceNorm1d(60, affine=True))
-
-    @lru_cache
-    def num_frames(self, num_samples: int) -> int:
-        kernel_size = [251, 3, 5, 3, 5, 3]
-        stride = [self.stride, 3, 1, 3, 1, 3]
-        padding = [0, 0, 0, 0, 0, 0]
-        dilation = [1, 1, 1, 1, 1, 1]
-
-        return multi_conv_num_frames(
-            num_samples,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-        )
-
-    def receptive_field_size(self, num_frames: int = 1) -> int:
-        kernel_size = [251, 3, 5, 3, 5, 3]
-        stride = [self.stride, 3, 1, 3, 1, 3]
-        dilation = [1, 1, 1, 1, 1, 1]
-
-        return multi_conv_receptive_field_size(
-            num_frames,
-            kernel_size=kernel_size,
-            stride=stride,
-            dilation=dilation,
-        )
-
-    def receptive_field_center(self, frame: int = 0) -> int:
-
-        kernel_size = [251, 3, 5, 3, 5, 3]
-        stride = [self.stride, 3, 1, 3, 1, 3]
-        padding = [0, 0, 0, 0, 0, 0]
-        dilation = [1, 1, 1, 1, 1, 1]
-
-        return multi_conv_receptive_field_center(
-            frame,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-        )
-
- 
-
-
-
-class VSegmentationModel(pl.LightningModule):
- 
-    def __init__(
-        self,
-        sincnet={"stride": 10},
-        lstm={
-            "hidden_size": 128,
-            "num_layers": 4,
-            "bidirectional": True,
-            "dropout": 0.5,
-            "batch_first": True,
-        },
-        sample_rate: int = 16000,
-        batch_size=32,
-        duration=5,
-        num_classes=4,
-    ):
-        super().__init__()
-
-        self.duration = duration
-        self.batch_size = batch_size
-        self.num_classes = num_classes
-        sincnet["sample_rate"] = sample_rate
-        self.save_hyperparameters()
-        self.sincnet = SincNet(**sincnet)
-        self.core = nn.LSTM(input_size=60, **lstm)
-        num_out_features = lstm["hidden_size"] * (2 if lstm["bidirectional"] else 1)
-        num_out_features_halved = num_out_features // 2
-        self.linear = nn.ModuleList(
-            [
-                nn.Linear(
-                    in_features=num_out_features,
-                    out_features=num_out_features_halved,
-                    bias=True,
-                ),
-                nn.Linear(
-                    in_features=num_out_features_halved,
-                    out_features=num_out_features_halved,
-                    bias=True,
-                ),
-            ]
-        )
-        self.classifier = nn.Linear(
-            in_features=num_out_features_halved, out_features=self.num_classes
-        )
-        self.activation = nn.Sigmoid()
-        self.get_num_frames()
-
-        self.validation_metric = MetricCollection(
-            [
-                AUROC(
-                    self.num_frames ==self.num_classes,
-                    pos_label=1,
-                    average="macro",
-                    compute_on_step=False,
-                ),
-                OptimalDiarizationErrorRate(),
-                OptimalDiarizationErrorRateThreshold(),
-                OptimalSpeakerConfusionRate(),
-                OptimalMissedDetectionRate(),
-                OptimalFalseAlarmRate(),
-            ]
-        )
+    def forward(self, x):
+        sinc = torch.sin(self.coeffs * self.sample_rate) / (self.coeffs * self.sample_rate)
+        h = sinc.sum(2) + self.b.unsqueeze(1)
+        return nn.functional.conv1d(x, h.unsqueeze(-1), stride=self.kernel_size // 2)
+    
+class Classifier(nn.Module):
+    def __init__(self, input_size):
+        super(Classifier, self).__init__()
+        self.conv1 = nn.Conv1d(13, 32, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm1d(32)
+        self.relu1 = nn.ReLU()
+        self.pool1 = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm1d(64)
+        self.relu2 = nn.ReLU()
+        self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm1d(64)
+        self.relu2 = nn.ReLU()
+        self.pool2 = nn.MaxPool1d(kernel_size=2, stride=2)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(64 * (input_size // 4), 64)
+        self.relu3 = nn.ReLU()
+        self.fc2 = nn.Linear(64,2)
 
     def get_num_frames(self):
         x = torch.randn(
